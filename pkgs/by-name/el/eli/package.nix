@@ -28,6 +28,13 @@ let
       ncurses.dev
     ];
   };
+  libXaw_combined = symlinkJoin {
+    name = "libXaw_combined";
+    paths = [
+      xorg.libXaw
+      xorg.libXaw.dev
+    ];
+  };
 in
 stdenv.mkDerivation rec {
   pname = "eli";
@@ -39,13 +46,13 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [
-    ncurses
+    curses_combined
     fontconfig
   ]
   ++ (with xorg; [
     libX11.dev
     libXt.dev
-    libXaw.dev
+    libXaw_combined
     libXext.dev
   ]);
 
@@ -65,6 +72,7 @@ stdenv.mkDerivation rec {
     configureFlagsArray=(
       --with-tcltk="${tcl} ${tk_combined}"
       --with-curses="${curses_combined}"
+      --with-Xaw="${libXaw_combined}"
     )
     export ODIN_LOCALIPC=1
   '';
