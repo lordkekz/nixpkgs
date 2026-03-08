@@ -2,6 +2,7 @@
   stdenv,
   lib,
   fetchpatch,
+  fetchurl,
   zstd,
   fetchFromGitiles,
   fetchNpmDeps,
@@ -195,6 +196,14 @@ let
         inherit (llvmPackages) bintools;
       }
     );
+
+  rustTools = symlinkJoin {
+    name = "rustTools";
+    paths = [
+      buildPackages.rust-bindgen
+      buildPackages.rustfmt
+    ];
+  };
 
   chromiumRosettaStone = {
     cpu =
@@ -504,11 +513,12 @@ let
       # https://chromium-review.googlesource.com/c/chromium/src/+/6897026
       ./patches/chromium-141-rust.patch
     ]
-    ++ lib.optionals stdenv.hostPlatform.isAarch64 [
+    ++ lib.optionals (!chromiumVersionAtLeast "145" && stdenv.hostPlatform.isAarch64) [
       # Reverts decommit pooled pages which causes random crashes of tabs on systems
       # with page sizes different than 4k. It 'supports' runtime page sizes, but has
       # a hardcode for aarch64 systems.
       # https://issues.chromium.org/issues/378017037
+      # Started failing to apply with M145, but this is no longer needed anyway.
       (fetchpatch {
         name = "reverted-v8-decommit-pooled-paged-by-default.patch";
         # https://chromium-review.googlesource.com/c/v8/v8/+/5864909
@@ -597,6 +607,50 @@ let
         decode = "base64 -d";
         revert = true;
         hash = "sha256-bYcJqPMbE7hMvhZVnzqHok1crUAdqrzqxr+4IHNzAtg=";
+      })
+    ]
+    ++ lib.optionals (chromiumVersionAtLeast "144") [
+      # Patch rustc_nightly_capability to eval to false instead of true.
+      # https://chromium-review.googlesource.com/c/chromium/src/+/7022369
+      ./patches/chromium-144-rustc_nightly_capability.patch
+    ]
+    ++ lib.optionals (versionRange "144.0.7559.132" "145" && !ungoogled) [
+      # Rollup was swapped with esbuild because of compile failures on Windows,
+      # which is not compatible with our build yet. So let's revert it for now.
+      # Ungoogled ships its own variant of this patch upstream.
+      # https://issues.chromium.org/issues/461602362
+      (fetchpatch {
+        name = "revert-devtools-frontend-esbuild-instead-of-rollup.patch";
+        # https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/7526345
+        url = "https://chromium.googlesource.com/devtools/devtools-frontend/+/f130475580017f9f87502343dbcfc0c76dccefe8^!?format=TEXT";
+        decode = "base64 -d";
+        stripLen = 1;
+        extraPrefix = "third_party/devtools-frontend/src/";
+        revert = true;
+        hash = "sha256-k+xCfhDuHxtuGhY7LVE8HvbDJt8SEFkslBcJe7t5CAg=";
+      })
+    ]
+    ++ lib.optionals (chromiumVersionAtLeast "145" && !ungoogled) [
+      # Non-backported variant of the patch above for M145
+      (fetchpatch {
+        name = "revert-devtools-frontend-esbuild-instead-of-rollup.patch";
+        # https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/7485622
+        url = "https://chromium.googlesource.com/devtools/devtools-frontend/+/72846d78927b90a77b51b12d13009320a74067e0^!?format=TEXT";
+        decode = "base64 -d";
+        stripLen = 1;
+        extraPrefix = "third_party/devtools-frontend/src/";
+        revert = true;
+        hash = "sha256-vu60z6PuWavNoEoxW0thSy89WxztOEG50V1ZSfJRRug=";
+      })
+      (fetchpatch {
+        name = "revert-devtools-frontend-reland-use-native-rollup.patch";
+        # https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/7368549
+        url = "https://chromium.googlesource.com/devtools/devtools-frontend/+/7c2d912b52f18fff4a9ef7bd64608f2feefc0d83^!?format=TEXT";
+        decode = "base64 -d";
+        stripLen = 1;
+        extraPrefix = "third_party/devtools-frontend/src/";
+        revert = true;
+        hash = "sha256-Qa4GvamZ//0WTAZmDXOQJVz9dnYNzBkD8lYcWOHdVIY=";
       })
     ];
 
@@ -698,6 +752,20 @@ let
             '/usr/share/locale/' \
             '${glibc}/share/locale/'
 
+      ''
+      # Workaround (crimes) for our rollup/esbuild revert in M145.
+      # https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/7414812
+      # We cannot use fetchpatch{,2} because it silently drops blobs and messes up symlinks.
+      # We cannot use GNU patch (patchPhase) because it does not support git binary diffs.
+      # We cannot use Gerrit/Gitiles because the git sha lengths may change as the repo grows.
+      + lib.optionalString (chromiumVersionAtLeast "145" && !ungoogled) ''
+        ${lib.getExe buildPackages.git} apply --reverse --directory=third_party/devtools-frontend/src/ ${
+          fetchurl {
+            name = "revert-devtools-frontend-remove-rollup-wasm.patch";
+            url = "https://github.com/ChromeDevTools/devtools-frontend/commit/a377a8c570a370e1bfccaf82f128e3b977dbf866.patch?full_index=1";
+            hash = "sha256-83T37ts54iotGYQAAyVv5CF8fMVrh/tfVRhfWaOlUkI=";
+          }
+        }
       ''
       + ''
         # Allow to put extensions into the system-path.
@@ -835,7 +903,8 @@ let
         use_system_libffi = true;
         # Use nixpkgs Rust compiler instead of the one shipped by Chromium.
         rust_sysroot_absolute = "${buildPackages.rustc}";
-        rust_bindgen_root = "${buildPackages.rust-bindgen}";
+        rust_bindgen_root =
+          if chromiumVersionAtLeast "144" then "${rustTools}" else "${buildPackages.rust-bindgen}";
         enable_rust = true;
         # While we technically don't need the cache-invalidation rustc_version provides, rustc_version
         # is still used in some scripts (e.g. build/rust/std/find_std_rlibs.py).
@@ -906,7 +975,12 @@ let
           TERM=dumb ninja -C "${buildPath}" -j$NIX_BUILD_CORES "${target}"
           bash -s << EOL
           (
-            source chrome/installer/linux/common/installer.include
+            source ${
+              if chromiumVersionAtLeast "144" then
+                "remoting/host/installer/linux/"
+              else
+                "chrome/installer/linux/common"
+            }/installer.include
             PACKAGE=$packageName
             MENUNAME="Chromium"
             process_template chrome/app/resources/manpage.1.in "${buildPath}/chrome.1"

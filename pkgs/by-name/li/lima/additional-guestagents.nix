@@ -1,9 +1,7 @@
 {
   lib,
-  stdenv,
   buildGoModule,
   callPackage,
-  apple-sdk_15,
   findutils,
 }:
 
@@ -14,15 +12,12 @@ buildGoModule (finalAttrs: {
   # nixpkgs-update: no auto update
   inherit (callPackage ./source.nix { }) version src vendorHash;
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    apple-sdk_15
-  ];
+  env.CGO_ENABLED = "0";
 
   buildPhase =
     let
       makeFlags = [
         "VERSION=v${finalAttrs.version}"
-        "CC=${stdenv.cc.targetPrefix}cc"
       ];
     in
     ''
@@ -73,8 +68,6 @@ buildGoModule (finalAttrs: {
     '';
     changelog = "https://github.com/lima-vm/lima/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [
-      kachick
-    ];
+    maintainers = [ ];
   };
 })

@@ -72,7 +72,9 @@ let
       # Reduced debug info conflict with BTF and have been enabled in
       # aarch64 defconfig since 5.13
       DEBUG_INFO_REDUCED = whenAtLeast "5.13" (option no);
-      DEBUG_INFO_BTF = option yes;
+      # Intermittently breaks on 5.10 for unknown reasons.
+      # https://lore.kernel.org/r/6dd6eef7-15cb-00a3-c216-d6eaaa5cbf54@est.tech
+      DEBUG_INFO_BTF = whenAtLeast "5.11" (option yes);
       # Allow loading modules with mismatched BTFs
       # FIXME: figure out how to actually make BTFs reproducible instead
       # See https://github.com/NixOS/nixpkgs/pull/181456 for details.
@@ -562,9 +564,9 @@ let
         DRM_DP_CEC = whenOlder "6.10" yes;
         DRM_DISPLAY_DP_AUX_CEC = whenAtLeast "6.10" yes;
 
-        # Required for Nova
-        # FIXME: remove after https://gitlab.freedesktop.org/drm/rust/kernel/-/commit/3d3352e73a55a4ccf110f8b3419bbe2fbfd8a030 lands
-        RUST_FW_LOADER_ABSTRACTIONS = whenAtLeast "6.12" yes;
+        # Do not enable Nova drivers, which are still WIP. This is the Kconfig default.
+        NOVA_CORE = whenAtLeast "6.15" no;
+        DRM_NOVA = whenAtLeast "6.16" no;
       }
       //
         lib.optionalAttrs
@@ -587,6 +589,8 @@ let
         DRM_VC4_HDMI_CEC = yes;
         # Enable HDMI out on platforms using the RK3588 lineup of SoCs.
         ROCKCHIP_DW_HDMI_QP = whenAtLeast "6.13" yes;
+        # Enable DSI out on platforms using the RK3588 lineup of SoCs.
+        ROCKCHIP_DW_MIPI_DSI2 = whenAtLeast "6.16" yes;
       };
 
     # Enable Rust and features that depend on it
