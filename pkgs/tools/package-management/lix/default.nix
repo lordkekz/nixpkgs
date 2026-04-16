@@ -203,14 +203,14 @@ lib.makeExtensible (
       attrName = "lix_2_94";
 
       lix-args = rec {
-        version = "2.94.0";
+        version = "2.94.1";
 
         src = fetchFromGitea {
           domain = "git.lix.systems";
           owner = "lix-project";
           repo = "lix";
           rev = version;
-          hash = "sha256-X6X3NhgLnpkgWUbLs0nLjusNx/el3L1EkVm6OHqY2z8=";
+          hash = "sha256-+VJmizrdZPygtffgS/yfMb4PkZUUK5JmyGGzn0GPsKc=";
         };
 
         cargoDeps = rustPlatform.fetchCargoVendor {
@@ -221,24 +221,46 @@ lib.makeExtensible (
       };
     };
 
-    git = self.makeLixScope {
-      attrName = "git";
+    lix_2_95 = self.makeLixScope {
+      attrName = "lix_2_95";
 
       lix-args = rec {
-        version = "2.95.0-pre-20251121_${builtins.substring 0 12 src.rev}";
+        version = "2.95.1";
 
         src = fetchFromGitea {
           domain = "git.lix.systems";
           owner = "lix-project";
           repo = "lix";
-          rev = "b707403a308030739dfeacc5b0aaaeef8ba3f633";
-          hash = "sha256-kas7FT2J86DVJlPH5dNNHM56OgdQQyfCE/dX/EOKDp8=";
+          rev = version;
+          hash = "sha256-eZEynXdDcrjDMjGVfDhFJJrU5ENal7wlx7bn/wkggTg=";
         };
 
         cargoDeps = rustPlatform.fetchCargoVendor {
           name = "lix-${version}";
           inherit src;
-          hash = "sha256-APm8m6SVEAO17BBCka13u85/87Bj+LePP7Y3zHA3Mpg=";
+          hash = "sha256-a5XtutX+NS4wOqxeqbscWZMs99teKick5+cQfbCRGxQ=";
+        };
+      };
+    };
+
+    git = self.makeLixScope {
+      attrName = "git";
+
+      lix-args = rec {
+        version = "2.96.0-pre-20260317_${builtins.substring 0 12 src.rev}";
+
+        src = fetchFromGitea {
+          domain = "git.lix.systems";
+          owner = "lix-project";
+          repo = "lix";
+          rev = "96db7c79cf2a9a06725360b0d12e5de583bef07d";
+          hash = "sha256-Ixwk38HArs7MZXxdWRkSZFzUhUdlCro+8+M/sO+fE/Y=";
+        };
+
+        cargoDeps = rustPlatform.fetchCargoVendor {
+          name = "lix-${version}";
+          inherit src;
+          hash = "sha256-a5XtutX+NS4wOqxeqbscWZMs99teKick5+cQfbCRGxQ=";
         };
       };
     };

@@ -626,14 +626,7 @@ with lib.maintainers;
   };
 
   lxc = {
-    members = [
-      aanderse
-      adamcstephens
-      megheaiulian
-      mkg20001
-    ];
-    scope = "All things linuxcontainers. Incus, LXC, and related packages.";
-    shortName = "lxc";
+    github = "lxc";
   };
 
   lxqt = {
@@ -854,6 +847,10 @@ with lib.maintainers;
     scope = "Maintain the R programming language and related packages.";
     shortName = "R";
     enableFeatureFreezePing = true;
+  };
+
+  radicle = {
+    github = "radicle";
   };
 
   redcodelabs = {

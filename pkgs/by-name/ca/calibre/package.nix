@@ -94,6 +94,74 @@ stdenv.mkDerivation (finalAttrs: {
       # Manually ported to the current release version from the patch:
       # https://github.com/kovidgoyal/calibre/commit/f0649b27512e987b95fcab2e1e0a3bcdafc23379.patch
       ./CVE-2026-25731.patch
+      # Fix CVE-2026-26064
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0326
+      # https://github.com/NixOS/nixpkgs/issues/494339
+      # Fixed upstream in 9.3.0.
+      (fetchpatch {
+        name = "CVE-2026-26064.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/e1b5f9b45a5e8fa96c136963ad9a1d35e6adac62.patch";
+        hash = "sha256-C7DBSuaL5VpLbjh/jMar+QdoqaobKcpEWJIIbpxMwjE=";
+      })
+      # Fix CVE-2026-26065
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0327
+      # https://github.com/NixOS/nixpkgs/issues/494340
+      # Fixed upstream in 9.3.0.
+      (fetchpatch {
+        name = "CVE-2026-26065.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/b6da1c3878c06eb1356cb0ec1106cb66e0e9bfb8.patch";
+        hash = "sha256-zYC2A5qNsCWycygnD+SjtgSE5kclWXIe/etfZAL3Mek=";
+      })
+      # Fix CVE-2026-27810
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0485
+      # https://github.com/NixOS/nixpkgs/issues/495148
+      # Fixed upstream in 9.4.0.
+      (fetchpatch {
+        name = "CVE-2026-27810.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/a468ce0f268032eea1f7431853248148ffa2e06a.patch";
+        hash = "sha256-98htxrV0Wc2UmZOgEjoj6JDWmUbvS0GoC7svUhv4+ns=";
+      })
+      # Fix CVE-2026-27824
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0504
+      # https://github.com/NixOS/nixpkgs/issues/496127
+      # Fixed upstream in 9.4.0.
+      (fetchpatch {
+        name = "CVE-2026-27824.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/2f273444460d06f72f7a8f390f5f9ff325d1f836.patch";
+        hash = "sha256-xKkt8v/HFB3swY6dKlMrycPt5NCFN4FRH3iRO/1aokQ=";
+      })
+      # Fix CVE-2026-30853
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0656
+      # https://github.com/NixOS/nixpkgs/issues/500148
+      # Fixed upstream in 9.5.0.
+      (fetchpatch {
+        name = "CVE-2026-30853.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/0f8dc639337d9ace67201e15ca12d5906d05f4c8.patch";
+        hash = "sha256-P/x1dsxHQ1cp/H34CIXvBvge2LCEQ1QKrTuJwpOEunY=";
+      })
+      # Fix CVE-2026-33205
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0824
+      # https://github.com/NixOS/nixpkgs/issues/504457
+      # Fixed upstream in 9.6.0.
+      (fetchpatch {
+        name = "CVE-2026-33205.1.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/6eb7b5458f183c8a037e9d7dac428122a77204e4.patch";
+        hash = "sha256-JhMTuvqR0CZ1zNYC3pKRnu07ftl71Z/IDS3sKa3i2Ic=";
+      })
+      (fetchpatch {
+        name = "CVE-2026-33205.2.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/b1ef6a8142b8dadeb7e72c250c65d42b36ee7118.patch";
+        hash = "sha256-1uZ2c+yUilt06okc0vSgilPrmvluAodbwEMEtdd/7JE=";
+      })
+      # Fix CVE-2026-33206
+      # http://tracker.security.nixos.org/issues/NIXPKGS-2026-0825
+      # https://github.com/NixOS/nixpkgs/issues/504458
+      # Fixed upstream in 9.6.0.
+      (fetchpatch {
+        name = "CVE-2026-33206.patch";
+        url = "https://github.com/kovidgoyal/calibre/commit/c43f347837dbc00d9a7b5ff15a228b6f6081e290.patch";
+        hash = "sha256-rHDMaZ/P9Or6Asr9YZO1lmvNqEpoFfil1w98t713XdI=";
+      })
     ]
     ++ lib.optional (!unrarSupport) ./dont_build_unrar_plugin.patch;
 
@@ -307,7 +375,10 @@ stdenv.mkDerivation (finalAttrs: {
     '';
     changelog = "https://github.com/kovidgoyal/calibre/releases/tag/v${finalAttrs.version}";
     license = if unrarSupport then lib.licenses.unfreeRedistributable else lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ pSub ];
+    maintainers = with lib.maintainers; [
+      pSub
+      sempiternal-aurora
+    ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
   };

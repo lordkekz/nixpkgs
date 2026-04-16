@@ -12,7 +12,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dprint";
-  version = "0.51.1";
+  version = "0.54.0";
 
   # Prefer repository rather than crate here
   #   - They have Cargo.lock in the repository
@@ -21,10 +21,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "dprint";
     repo = "dprint";
     tag = finalAttrs.version;
-    hash = "sha256-jj9SsVWCw2Fzoj1ome2rJ9bADFgREUdQf0jfOpt8PkU=";
+    hash = "sha256-dNs2LQeEndeXS8xR9SXVFWT9PS+haB9SDZ+3PUPkFjg=";
   };
 
-  cargoHash = "sha256-zjk2LrljubzfNk20y4XTcnqiQQsBlc2aRwAhH8wpv3Q=";
+  cargoHash = "sha256-fmbO14eTObK1cZu9gDls25KRmzAJPGiqQ8uURGD2vV0=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -79,7 +79,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
-    updateScript = nix-update-script { };
+    updateScript = nix-update-script {
+      # Follow upstream's release policy. Git tags are not enough for this package:
+      # https://github.com/dprint/dprint/issues/1113
+      extraArgs = [ "--use-github-releases" ];
+    };
   };
 
   meta = {

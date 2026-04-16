@@ -12676,6 +12676,8 @@ self: super: with self; {
 
   py-multihash = callPackage ../development/python-modules/py-multihash { };
 
+  py-netgear-plus = callPackage ../development/python-modules/py-netgear-plus { };
+
   py-nextbusnext = callPackage ../development/python-modules/py-nextbusnext { };
 
   py-nightscout = callPackage ../development/python-modules/py-nightscout { };
@@ -16193,6 +16195,8 @@ self: super: with self; {
   requests-futures = callPackage ../development/python-modules/requests-futures { };
 
   requests-gssapi = callPackage ../development/python-modules/requests-gssapi { };
+
+  requests-hardened = callPackage ../development/python-modules/requests-hardened { };
 
   requests-hawk = callPackage ../development/python-modules/requests-hawk { };
 

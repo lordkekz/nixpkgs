@@ -1507,10 +1507,6 @@ with pkgs;
 
   asymptote = libsForQt5.callPackage ../tools/graphics/asymptote { };
 
-  authelia = callPackage ../servers/authelia {
-    buildGoModule = buildGo124Module;
-  };
-
   authentik-outposts = recurseIntoAttrs (callPackages ../by-name/au/authentik/outposts.nix { });
 
   autoflake = with python3.pkgs; toPythonApplication autoflake;
@@ -3061,8 +3057,6 @@ with pkgs;
     isl_0_27
     ;
 
-  jackett = callPackage ../servers/jackett { };
-
   jamesdsp-pulse = callPackage ../by-name/ja/jamesdsp/package.nix {
     usePipewire = false;
     usePulseaudio = true;
@@ -3717,8 +3711,6 @@ with pkgs;
 
   tabview = with python3Packages; toPythonApplication tabview;
 
-  tautulli = python3Packages.callPackage ../servers/tautulli { };
-
   plfit = callPackage ../by-name/pl/plfit/package.nix {
     python = null;
   };
@@ -4161,10 +4153,12 @@ with pkgs;
   inherit (callPackages ../servers/varnish { })
     varnish60
     varnish77
+    varnish80
     ;
   inherit (callPackages ../servers/varnish/packages.nix { })
     varnish60Packages
     varnish77Packages
+    varnish80Packages
     ;
   varnishPackages = varnish77Packages;
   varnish = varnishPackages.varnish;
@@ -6080,19 +6074,19 @@ with pkgs;
   electron-source = callPackage ../development/tools/electron { };
 
   inherit (callPackages ../development/tools/electron/binary { })
-    electron_36-bin
     electron_37-bin
     electron_38-bin
     electron_39-bin
     electron_40-bin
+    electron_41-bin
     ;
 
   inherit (callPackages ../development/tools/electron/chromedriver { })
-    electron-chromedriver_36
     electron-chromedriver_37
     electron-chromedriver_38
     electron-chromedriver_39
     electron-chromedriver_40
+    electron-chromedriver_41
     ;
 
   inherit
@@ -6112,15 +6106,8 @@ with pkgs;
           });
       in
       {
-        electron_36 = electron_36-bin;
-        electron_37 = getElectronPkg {
-          src = electron-source.electron_37;
-          bin = electron_37-bin;
-        };
-        electron_38 = getElectronPkg {
-          src = electron-source.electron_38;
-          bin = electron_38-bin;
-        };
+        electron_37 = electron_37-bin;
+        electron_38 = electron_38-bin;
         electron_39 = getElectronPkg {
           src = electron-source.electron_39;
           bin = electron_39-bin;
@@ -6129,17 +6116,21 @@ with pkgs;
           src = electron-source.electron_40;
           bin = electron_40-bin;
         };
+        electron_41 = getElectronPkg {
+          src = electron-source.electron_41;
+          bin = electron_41-bin;
+        };
       }
     )
-    electron_36
     electron_37
     electron_38
     electron_39
     electron_40
+    electron_41
     ;
-  electron = electron_38;
-  electron-bin = electron_38-bin;
-  electron-chromedriver = electron-chromedriver_38;
+  electron = electron_41;
+  electron-bin = electron_41-bin;
+  electron-chromedriver = electron-chromedriver_41;
 
   autoconf = callPackage ../development/tools/misc/autoconf { };
   autoconf269 = callPackage ../development/tools/misc/autoconf/2.69.nix { };
@@ -7167,9 +7158,7 @@ with pkgs;
   gecode_6 = qt5.callPackage ../development/libraries/gecode { };
   gecode = gecode_6;
 
-  gegl = callPackage ../development/libraries/gegl {
-    openexr = openexr_2;
-  };
+  gegl = callPackage ../development/libraries/gegl { };
 
   geoclue2-with-demo-agent = geoclue2.override { withDemoAgent = true; };
 
@@ -9991,8 +9980,6 @@ with pkgs;
   # zen-kernel
   linuxPackages_zen = linuxKernel.packages.linux_zen;
   linux_zen = linuxPackages_zen.kernel;
-  linuxPackages_lqx = linuxKernel.packages.linux_lqx;
-  linux_lqx = linuxPackages_lqx.kernel;
 
   # XanMod kernel
   linuxPackages_xanmod = linuxKernel.packages.linux_xanmod;
@@ -10961,20 +10948,13 @@ with pkgs;
     fftw = fftwSinglePrec;
   };
 
-  welle-io = qt6Packages.callPackage ../applications/radio/welle-io { };
-
-  wireshark = qt6Packages.callPackage ../applications/networking/sniffers/wireshark {
-    libpcap = libpcap.override { withBluez = stdenv.hostPlatform.isLinux; };
-  };
-  wireshark-qt = wireshark;
-
   qtwirediff = qt6Packages.callPackage ../applications/networking/sniffers/qtwirediff { };
 
+  welle-io = qt6Packages.callPackage ../applications/radio/welle-io { };
+
   tshark = wireshark-cli;
-  wireshark-cli = wireshark.override {
-    withQt = false;
-    libpcap = libpcap.override { withBluez = stdenv.hostPlatform.isLinux; };
-  };
+  wireshark-cli = wireshark.override { withQt = false; };
+  wireshark-qt = wireshark;
 
   buildMozillaMach =
     opts: callPackage (import ../build-support/build-mozilla-mach/default.nix opts) { };
@@ -14403,6 +14383,8 @@ with pkgs;
   xp-pen-deco-01-v2-driver = libsForQt5.xp-pen-deco-01-v2-driver;
 
   radicle-node-unstable = callPackage ../by-name/ra/radicle-node/unstable.nix { };
+
+  olivetin-3k = callPackage ../by-name/ol/olivetin/3k.nix { };
 
   newlib-nano = newlib.override {
     nanoizeNewlib = true;
