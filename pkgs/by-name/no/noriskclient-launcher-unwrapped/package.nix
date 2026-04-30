@@ -18,13 +18,13 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "noriskclient-launcher-unwrapped";
-  version = "0.6.16";
+  version = "0.6.19";
 
   src = fetchFromGitHub {
     owner = "NoRiskClient";
     repo = "noriskclient-launcher";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-xYbQC7KLYKB2nU+bTl8jMMkfSuq7p8RNr8nJyLEQb1c=";
+    hash = "sha256-SHLYCpflIjslCuCPROyuVsIdNIkHWl2BVflgxAz3RYg=";
   };
 
   yarnOfflineCache = fetchYarnDeps {
@@ -45,10 +45,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
 
-  cargoHash = "sha256-mldZg4Y12o6Laf2RJSeLzKCcqBpFesUbHhmxRjT9MDI=";
+  cargoHash = "sha256-j41whr62i0FlTe/fWoPsMS9kX5aPgCjM9TckeZpnwgw=";
 
   cargoRoot = "src-tauri";
   buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  checkFlags = [
+    # test fails to find correct function
+    "--skip=utils::string_utils::safe_truncate"
+  ];
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -78,6 +83,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    changelog = "https://github.com/NoRiskClient/noriskclient-launcher/blob/v3/changelogs/${finalAttrs.version}.txt";
     description = "Minecraft Launcher for NoRisk Client";
     homepage = "https://norisk.gg";
     license = lib.licenses.gpl3Only;

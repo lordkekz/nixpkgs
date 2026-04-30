@@ -19,14 +19,15 @@
     #
     # Ensure you also check ../mattermostLatest/package.nix.
     regex = "^v(10\\.11\\.[0-9]+)$";
-    version = "10.11.13";
-    srcHash = "sha256-jh1Ez+5pJiB9eBbOkVMVWryok0NsHrg0p/1d2723fwU=";
-    vendorHash = "sha256-hKAKM2qFn5Zvr/Sc33XmFl7l59agMaEvlvVD5aOyaxI=";
+    version = "10.11.15";
+    srcHash = "sha256-b/hXZHYULl9nNJZT4GtKsaOfX8BEzz/v3Uy3EEbzN8U=";
+    vendorHash = "sha256-Z94d1eCIkuMG72Mlvk5su/99+4kJoaeHxaeZuk96Hlc=";
     npmDepsHash = "sha256-p9dq31qw0EZDQIl2ysKE38JgDyLA6XvSv+VtHuRh+8A=";
     lockfileOverlay = ''
       unlock(.; "@floating-ui/react"; "channels/node_modules/@floating-ui/react")
     '';
   },
+  ...
 }:
 
 let
@@ -193,6 +194,7 @@ buildMattermost rec {
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
+        "--use-github-releases"
         "--version-regex"
         versionInfo.regex
       ]

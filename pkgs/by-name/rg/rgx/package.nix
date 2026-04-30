@@ -7,16 +7,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rgx";
-  version = "0.10.1";
+  version = "0.12.0";
 
   src = fetchFromGitHub {
     owner = "brevity1swos";
     repo = "rgx";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-H566bgnf4bNPXS7rPtOFTlqmkwoXKbB1fBmFDZQUjac=";
+    hash = "sha256-JLFJGMwKQqkrVwck6gd79AzSVL0fRHJ8jo73+EEdYlA=";
   };
 
-  cargoHash = "sha256-hTR4eZKUOxvib5lAV/l76GZQPQ6s+Hgl3DT2kaGlaGg=";
+  cargoHash = "sha256-D609cDiJ+L/iGtC9dKwU5dgz4+X3//6qiFjWixBBqhg=";
 
   buildInputs = [ pcre2 ];
 

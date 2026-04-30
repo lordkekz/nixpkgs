@@ -2,7 +2,7 @@
   lib,
   stdenv,
   callPackage,
-  rustPlatform,
+  rustPackages_1_94,
   fetchFromGitHub,
   nixosTests,
   pkg-config,
@@ -17,18 +17,18 @@ let
   webvault = callPackage ./webvault.nix { };
 in
 
-rustPlatform.buildRustPackage rec {
+rustPackages_1_94.rustPlatform.buildRustPackage rec {
   pname = "vaultwarden";
-  version = "1.35.4";
+  version = "1.35.8";
 
   src = fetchFromGitHub {
     owner = "dani-garcia";
     repo = "vaultwarden";
     tag = version;
-    hash = "sha256-NphgKTlyVsH42TEGU8unhL798jTQMkS5JyNckKhk8YM=";
+    hash = "sha256-bEPwH0+b4cQTh1hNiiX2qvTNeRxxShm2JXNKNfn4xm8=";
   };
 
-  cargoHash = "sha256-PkFxHhFrdVB/hfSoT6j87K4IEknl+ZO1omGHrXBWEMg=";
+  cargoHash = "sha256-gcE3qfSVCk08haADyqOff4R0ekd9Q6RB59LUtow9Yi4=";
 
   # used for "Server Installed" version in admin panel
   env.VW_VERSION = version;
