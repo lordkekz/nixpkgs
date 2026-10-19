@@ -18,14 +18,14 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "niquests";
-  version = "3.21.0";
+  version = "3.21.2";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jawah";
     repo = "niquests";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-oKxs1ivKzoCIqFnh81MwCbLfjH5JTKj/orTZNe7uiC4=";
+    hash = "sha256-0OVZeX7nFIdB7fMcmu4eutobfSJ7GVqBvSh1PeMtV3k=";
   };
 
   build-system = [ hatchling ];
@@ -41,6 +41,7 @@ buildPythonPackage (finalAttrs: {
       brotli
       socks
       ws
+      ws-fast
       zstd
       ;
     full = [

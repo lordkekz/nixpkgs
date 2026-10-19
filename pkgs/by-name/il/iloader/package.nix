@@ -22,13 +22,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   __structuredAttrs = true;
 
   pname = "iloader";
-  version = "2.3.1";
+  version = "2.3.8";
 
   src = fetchFromGitHub {
     owner = "nab138";
     repo = "iloader";
     rev = "v${finalAttrs.version}";
-    sha256 = "sha256-OgSDkFaOwhsEhFLceV0FxcZ8jEG9vy5fKQf9gSyUpNA=";
+    sha256 = "sha256-97CTooLPAhYt9tzPGWyJNyJcUqvomR1eaSpWnKleMh4=";
   };
 
   nodeModules = stdenv.mkDerivation {
@@ -64,14 +64,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       runHook postInstall
     '';
 
-    outputHash = "sha256-Le0Fn/Vdvq9RitDfDVyHl8VBCA+j068ywhiyM+JLg94=";
+    outputHash = "sha256-v6Hy3fmbpArVJh0YLJZGKH65nXiWPMjUsu1nPKdHlQ8=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
 
   cargoRoot = "src-tauri";
   buildAndTestSubdir = "src-tauri";
-  cargoHash = "sha256-CJSm6NAdXEUwhmbx48o7tnZALQtuvhUxUpa7KtC9ZHg=";
+  cargoHash = "sha256-EwgiDDYDD8jDXO0cKQeJOFNGKWgXZw7txCQ3uFReXKI=";
 
   doCheck = false;
 

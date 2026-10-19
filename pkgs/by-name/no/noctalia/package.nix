@@ -12,6 +12,7 @@
   makeBinaryWrapper,
   autoAddDriverRunpath,
   installShellFiles,
+  versionCheckHook,
 
   # libraries
   cairo,
@@ -42,25 +43,27 @@
   stb,
   systemdLibs,
   tomlplusplus,
+  tzdata,
   wayland,
   wayland-protocols,
   wireplumber,
 
   # runtime
   gitMinimal,
+  gsettings-desktop-schemas,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   __structuredAttrs = true;
 
   pname = "noctalia";
-  version = "5.0.0-beta.9";
+  version = "5.3.0";
 
   src = fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "noctalia";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-O07tHqxugZ/XE/90kx/UCZ0YCbHSI88v2ct2ezuCKi4=";
+    hash = "sha256-gCF1P9r0UzPah0fqBTg2nVuxuuNnRxnYYHklvq8VKZI=";
   };
 
   strictDeps = true;
@@ -110,7 +113,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [
-    (lib.mesonEnable "tests" false)
+    (lib.mesonEnable "tests" true)
     (lib.mesonEnable "jemalloc" (!stdenv.hostPlatform.isMusl))
   ];
 
@@ -123,20 +126,28 @@ stdenv.mkDerivation (finalAttrs: {
       --zsh <($out/bin/noctalia completions zsh)
   '';
 
-  # plugins are installed by cloning their repos
+  # plugins are installed by cloning their repos; the icon theme is read and
+  # color-scheme written through the org.gnome.desktop.interface GSettings schema
   postFixup = ''
     wrapProgram $out/bin/noctalia \
-      --prefix PATH : ${lib.makeBinPath [ gitMinimal ]}
+      --suffix PATH : ${lib.makeBinPath [ gitMinimal ]} \
+      --suffix XDG_DATA_DIRS : ${glib.getSchemaDataDirPath gsettings-desktop-schemas}
   '';
 
-  # remove --version=unstable once 5.0.0 stable is released
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version=unstable"
-      "--version-regex"
-      "v(5\\..*)"
-    ];
-  };
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    tzdata
+    gitMinimal
+  ];
+
+  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Sleek, customizable desktop shell crafted for Wayland";

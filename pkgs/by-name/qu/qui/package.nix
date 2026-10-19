@@ -1,6 +1,6 @@
 {
   lib,
-  buildGo126Module,
+  buildGo127Module,
   fetchFromGitHub,
   stdenvNoCC,
   nixosTests,
@@ -9,17 +9,17 @@
   pnpm_11,
   fetchPnpmDeps,
   pnpmConfigHook,
-  typescript,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
-buildGo126Module (finalAttrs: {
+buildGo127Module (finalAttrs: {
   pname = "qui";
-  version = "1.26.0";
+  version = "1.32.0";
   src = fetchFromGitHub {
     owner = "autobrr";
     repo = "qui";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-sBtuOlNx0/qYqXTIdszrdVhhNoH/fWmt2QCRDGExHb0=";
+    hash = "sha256-xMyZ2TDDKYObl1DpcrSn2UnhXBOQktJKFmK2C+zrfqY=";
   };
 
   qui-web = stdenvNoCC.mkDerivation (finalAttrs': {
@@ -30,7 +30,6 @@ buildGo126Module (finalAttrs: {
       nodejs
       pnpmConfigHook
       pnpm_11
-      typescript
     ];
 
     sourceRoot = "${finalAttrs.src.name}/web";
@@ -44,7 +43,7 @@ buildGo126Module (finalAttrs: {
         ;
       pnpm = pnpm_11;
       fetcherVersion = 4;
-      hash = "sha256-bizOVrot/FrZ+NDefXJkll9YxjxbRut5tdPqGd3u5kE=";
+      hash = "sha256-F+B1rj9fcgaDfPYC+8hUZfpNQNiiK9TnT/Ld68fW/WA=";
     };
 
     postBuild = ''
@@ -56,7 +55,7 @@ buildGo126Module (finalAttrs: {
     '';
   });
 
-  vendorHash = "sha256-Zam5xkJUsGbzvX5q9NKNiN0n7UxhCUk9e43GMzE4M18=";
+  vendorHash = "sha256-9ZfUUgVDcIvHLgeMbyGnVI/i9oicS6Ny9+HOzK1VP4o=";
 
   preBuild = ''
     cp -r ${finalAttrs.qui-web}/* web/dist
@@ -65,6 +64,10 @@ buildGo126Module (finalAttrs: {
   ldflags = [
     "-X github.com/autobrr/qui/internal/buildinfo.Version=${finalAttrs.version}"
     "-X main.PolarOrgID="
+  ];
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
   ];
 
   # some season-pack tests use non-existent source paths (e.g. /media/...) and

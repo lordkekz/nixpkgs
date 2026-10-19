@@ -16,6 +16,8 @@
   pulseaudio,
   udev,
   dav1d,
+  pciutils,
+  desktop-file-utils,
   cosmic-randr,
   xkeyboard_config,
   nix-update-script,
@@ -28,17 +30,17 @@ let
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-settings";
-  version = "1.6.0";
+  version = "1.10.0";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-settings";
     tag = "epoch-${finalAttrs.version}";
-    hash = "sha256-0QqUJ69ftgeCDMlMF8t77BS9O0XCtSE8GDpSc7bLEfk=";
+    hash = "sha256-Zjs3WzqZOeZ+XuG7IoJhGeRUuibIPw3IdEujqsLdsR8=";
   };
 
-  cargoHash = "sha256-rmHIeIONtHPECaFChCakhzsX0AzUHWS/Pg15oucWOLI=";
+  cargoHash = "sha256-iFC5ZZOYA2fkMjvdRhjKlMYJX/k/CzHjFEFt6iepdwU=";
 
   separateDebugInfo = true;
   __structuredAttrs = true;
@@ -60,6 +62,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pulseaudio
     udev
     dav1d
+    pciutils
+    desktop-file-utils
   ];
 
   dontUseJustBuild = true;

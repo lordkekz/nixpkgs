@@ -17,7 +17,7 @@ buildNpmPackage (finalAttrs: {
       src
       sourceRoot
       ;
-    hash = "sha256-wmAyH35rNgju0GyhvQJHS6vDkFKOoIgiN4ctnu4clN0=";
+    hash = "sha256-3O8QNXj3NG0vb7JmudnNzsqZmerMRyPsmz4b6TQBmtM=";
   };
   npmBuildScript = "build";
 

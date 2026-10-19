@@ -151,6 +151,16 @@ in
     {
       enable = lib.mkEnableOption "`i2pd` (I2P network router)";
       package = lib.mkPackageOption pkgs "i2pd" { };
+      checkConfig = lib.mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to check the configuration at build time by starting i2pd.
+
+          i2pd has no parse-only mode, so this check can fail when configured
+          listen addresses are unavailable in the build environment.
+        '';
+      };
       gracefulShutdown = lib.mkEnableOption "" // {
         description = ''
           If true, i2pd will wait for transit connections to close.
@@ -263,6 +273,14 @@ in
           types.submodule {
             inherit freeformType;
             options = {
+              type = lib.mkOption {
+                type = types.str;
+                default = "server";
+                description = ''
+                  Type of server tunnel.
+                  See <https://docs.i2pd.website/en/latest/user-guide/tunnels/#tunnel-types>.
+                '';
+              };
               host = lib.mkOption {
                 type = types.either types.str credType;
                 description = "IP address of server (on this address i2pd will send data from I2P)";
@@ -289,6 +307,14 @@ in
           types.submodule {
             inherit freeformType;
             options = {
+              type = lib.mkOption {
+                type = types.str;
+                default = "client";
+                description = ''
+                  Type of client tunnel.
+                  See <https://docs.i2pd.website/en/latest/user-guide/tunnels/#tunnel-types>.
+                '';
+              };
               port = lib.mkOption {
                 type = types.port;
                 description = "Port of client tunnel (on this port i2pd will receive data)";
@@ -401,10 +427,8 @@ in
       gen = attr: settings: {
         conf = genConfig "i2pd.conf" (credSubstituteRec attr settings);
         tunconf = genTunnels "i2pd-tunnels.conf" (
-          lib.mapAttrs' (k: v: lib.nameValuePair "client-${k}" (v // { "type" = "client"; })) (
-            credSubstituteRec attr cfg.clientTunnels
-          )
-          // lib.mapAttrs' (k: v: lib.nameValuePair "server-${k}" (v // { "type" = "server"; })) (
+          lib.mapAttrs' (k: v: lib.nameValuePair "client-${k}" v) (credSubstituteRec attr cfg.clientTunnels)
+          // lib.mapAttrs' (k: v: lib.nameValuePair "server-${k}" v) (
             credSubstituteRec attr cfg.serverTunnels
           )
         );
@@ -461,41 +485,43 @@ in
           '';
     in
     lib.mkIf cfg.enable {
-      system.checks = lib.optional (with pkgs.stdenv; buildPlatform.system == hostPlatform.system) (
-        pkgs.runCommand "services.i2pd.check-i2pd.conf" { }
-          # sh
-          ''
-            set -euo pipefail
-            i2pd="${lib.getExe cfg.package}"
-            conf="${i2pdCheckedConfig.conf}"
-            tunconf="${i2pdCheckedConfig.tunconf}"
+      system.checks =
+        lib.optional (cfg.checkConfig && (with pkgs.stdenv; buildPlatform.system == hostPlatform.system))
+          (
+            pkgs.runCommand "services.i2pd.check-i2pd.conf" { }
+              # sh
+              ''
+                set -euo pipefail
+                i2pd="${lib.getExe cfg.package}"
+                conf="${i2pdCheckedConfig.conf}"
+                tunconf="${i2pdCheckedConfig.tunconf}"
 
-            opts="$("$i2pd" --help | grep -Eo "^  --\S*port(udp)? arg" | sed "s/ arg\$/=0/g")"
+                opts="$("$i2pd" --help | grep -Eo "^  --\S*port(udp)? arg" | sed "s/ arg\$/=0/g")"
 
-            echo Checking "$conf"
-            ok=
-            while read line; do
-              case "$line" in
-                *none*i2pd*starting...*)
-                  [[ -z "$ok" ]] && ok=1
-                  kill -s INT $(cat pidfile)
-                  ;;
-                *critical*)
-                  ok=0
-                  ;;
-              esac
-            done < <(
-              "$i2pd" \
-                --pidfile=pidfile --loglevel=critical --datadir=datadir \
-                --conf="$conf" --tunconf="$tunconf" \
-                $opts 2>&1 \
-                | tee /dev/stderr
-            )
-            [[ "$ok" != "1" ]] && exit 1
+                echo Checking "$conf"
+                ok=
+                while read line; do
+                  case "$line" in
+                    *none*i2pd*starting...*)
+                      [[ -z "$ok" ]] && ok=1
+                      kill -s INT $(cat pidfile)
+                      ;;
+                    *critical*)
+                      ok=0
+                      ;;
+                  esac
+                done < <(
+                  "$i2pd" \
+                    --pidfile=pidfile --loglevel=critical --datadir=datadir \
+                    --conf="$conf" --tunconf="$tunconf" \
+                    $opts 2>&1 \
+                    | tee /dev/stderr
+                )
+                [[ "$ok" != "1" ]] && exit 1
 
-            touch $out
-          ''
-      );
+                touch $out
+              ''
+          );
 
       systemd.services.i2pd = {
         description = "Minimal I2P router";
@@ -562,6 +588,7 @@ in
     maintainers = with lib.maintainers; [
       N4CH723HR3R
       one-d-wide
+      edwtjo
     ];
   };
 }

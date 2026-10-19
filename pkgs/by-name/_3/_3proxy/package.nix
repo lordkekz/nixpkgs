@@ -2,19 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  pcre2,
+  python3,
   nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "3proxy";
-  version = "0.9.6";
+  version = "1.0.1";
 
   src = fetchFromGitHub {
     owner = "3proxy";
     repo = "3proxy";
     tag = finalAttrs.version;
-    sha256 = "sha256-0rCXz/vKFF5rvBXyvtt9DH0Jz+1i7rIylh07FqKBrZM=";
+    sha256 = "sha256-hLxafFU6nJ3I3NT3R24LPD7PBmQ1IZEbrVqvfmMZHIM=";
   };
+
+  buildInputs = [ pcre2 ];
+
+  nativeCheckInputs = [ python3 ];
+
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+    python3 tests/run.py -v
+    runHook postCheck
+  '';
 
   # They use 'install -s', that calls the native strip instead of the cross.
   # Don't strip binary on install, we strip it on fixup phase anyway.
@@ -48,5 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.bsd2;
     platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ misuzu ];
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "3proxy" finalAttrs.version;
   };
 })

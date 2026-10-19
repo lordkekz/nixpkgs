@@ -1,6 +1,6 @@
 {
   lib,
-  buildGoModule,
+  buildGo127Module,
   fetchFromGitHub,
   installShellFiles,
   git,
@@ -9,18 +9,18 @@
   nix-update-script,
 }:
 
-buildGoModule (finalAttrs: {
+buildGo127Module (finalAttrs: {
   pname = "entire";
-  version = "0.10.2";
+  version = "0.11.5";
 
   src = fetchFromGitHub {
     owner = "entireio";
     repo = "cli";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Di9o3D7LGpIxq4XYTIDSesNsQ1Z65qdOBWsiveXdWgg=";
+    hash = "sha256-MpTJt9HyEWkPGZIBST+iop0iCHHfy/4Hw3T5TmwB6Yo=";
   };
 
-  vendorHash = "sha256-b+WjeqPM+NhKJZrV+2sl3Ihy6ABPR+TB82EKzqyUBYU=";
+  vendorHash = "sha256-SgjJ2+eXUzN5YAafVII7Lgj9i2s1JDRBLanNNvhP0gA=";
 
   subPackages = [ "cmd/entire" ];
 

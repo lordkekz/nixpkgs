@@ -2,7 +2,7 @@
   lib,
   stdenv,
   go,
-  buildGoModule,
+  buildGoLatestModule,
   fetchFromGitHub,
   nix-update-script,
   installShellFiles,
@@ -10,19 +10,19 @@
   updatecli,
 }:
 
-buildGoModule (finalAttrs: {
+buildGoLatestModule (finalAttrs: {
   pname = "updatecli";
-  version = "0.120.0";
+  version = "0.122.1";
 
   src = fetchFromGitHub {
     owner = "updatecli";
     repo = "updatecli";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-KVGvOCdxgTK9chZU8TwemrQUlkvOdvWIzBG0dSY/VpU=";
+    hash = "sha256-Qfq2GzesnjRUt8gUqIBsGr8rt1mblz1+4RIP/EtLr2Y=";
   };
 
   proxyVendor = true;
-  vendorHash = "sha256-iZf6nB6arDEWDANq3Gp72kfFQi5QKGymHLKFJcnT+98=";
+  vendorHash = "sha256-3BwtGovBqiUkeGKSq+b2k80H6gf2YHnl/H2G1P+hoZ0=";
 
   # tests require network access
   doCheck = false;
@@ -69,6 +69,7 @@ buildGoModule (finalAttrs: {
     maintainers = with lib.maintainers; [
       croissong
       lpostula
+      lunkentuss
     ];
   };
 })

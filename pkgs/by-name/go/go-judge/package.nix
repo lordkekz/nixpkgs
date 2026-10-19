@@ -6,16 +6,16 @@
 
 buildGoModule (finalAttrs: {
   pname = "go-judge";
-  version = "1.12.2";
+  version = "1.13.1";
 
   src = fetchFromGitHub {
     owner = "criyle";
     repo = "go-judge";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-iC26hZT4jD0Z3wADxnSXkUaBnBmxWXY3WNb46cseb/Q=";
+    hash = "sha256-C1NpiYOivOORh1PISBLw0rnXPtSKvzPAuzMg4MPuZB8=";
   };
 
-  vendorHash = "sha256-LQnndEO4TFsLvxxfhifDmufjdFhsqOt4jBUqc38NuD0=";
+  vendorHash = "sha256-ICci0UWbDlxtfOMWP3I8s3V9b/QhhmWKHo98feeu9UI=";
 
   tags = [
     "nomsgpack"

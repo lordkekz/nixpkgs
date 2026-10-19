@@ -37,7 +37,7 @@
   python3,
   alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
+  pulseaudioSupport ? stdenv.hostPlatform.isLinux,
   libpulseaudio,
   browserSupport ? true,
   cef-binary,
@@ -98,13 +98,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "obs-studio";
-  version = "32.2.1";
+  version = "32.2.2";
 
   src = fetchFromGitHub {
     owner = "obsproject";
     repo = "obs-studio";
     rev = finalAttrs.version;
-    hash = "sha256-MpwywBxZvj7rUIt7eu1KMLdFt/1B0es7ug/t+J26Jz8=";
+    hash = "sha256-JAV3UvM89asUj6P5pD9a+6/Qfa2kFIVQqVfMOZn5MJE=";
     fetchSubmodules = true;
   };
 

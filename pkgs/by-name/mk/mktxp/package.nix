@@ -4,7 +4,7 @@
   fetchFromGitHub,
 }:
 let
-  version = "1.2.20";
+  version = "2.1.0";
 in
 python3Packages.buildPythonApplication {
   pname = "mktxp";
@@ -15,7 +15,7 @@ python3Packages.buildPythonApplication {
     owner = "akpw";
     repo = "mktxp";
     tag = "v${version}";
-    hash = "sha256-xYVIaO60ih3P/oV11QljSCF5iRYf2fK3EjEhhdPFIzo=";
+    hash = "sha256-KHsjOozplUtUj3X54QCZ4pJLDWB11SKwX6KnliBrK80=";
   };
 
   build-system = with python3Packages; [ setuptools ];

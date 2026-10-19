@@ -6,7 +6,6 @@
   lib,
   stdenvNoCC,
   fetchurl,
-  installShellFiles,
   makeBinaryWrapper,
   autoPatchelfHook,
   alsa-lib,
@@ -14,9 +13,10 @@
   ripgrep,
   bubblewrap,
   socat,
+  zstd,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  manifest ? lib.importJSON ./manifest.json,
+  manifest ? lib.importJSON ./manifest.zst.json,
 }:
 let
   stdenv = stdenvNoCC;
@@ -29,19 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
   inherit (manifest) version;
 
   src = fetchurl {
-    url = "${baseUrl}/${finalAttrs.version}/${platformKey}/claude";
+    url = "${baseUrl}/${finalAttrs.version}/${platformKey}/${platformManifestEntry.binary}";
     sha256 = platformManifestEntry.checksum;
   };
 
   dontUnpack = true;
   dontBuild = true;
-  __noChroot = stdenv.hostPlatform.isDarwin;
   # otherwise the bun runtime is executed instead of the binary
   dontStrip = true;
 
   nativeBuildInputs = [
-    installShellFiles
     makeBinaryWrapper
+    zstd
   ]
   ++ lib.optionals stdenv.hostPlatform.isElf [ autoPatchelfHook ];
 
@@ -50,7 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     runHook preInstall
 
-    installBin $src
+    mkdir -p $out/bin
+    unzstd -q $src -o $out/bin/claude
+    chmod 755 $out/bin/claude
 
     wrapProgram $out/bin/claude \
       --set DISABLE_AUTOUPDATER 1 \

@@ -49,13 +49,13 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "stellar-core";
-  version = "27.1.0";
+  version = "28.0.1";
 
   src = fetchFromGitHub {
     owner = "stellar";
     repo = "stellar-core";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-EXtfkjNOl3Loml7GXWYE8hh/IqItqA677YEh0Ve6dOI=";
+    hash = "sha256-yRwUwk0CNIQlPEKitXCjuF47qm8BFt9EYJXUfx28bMs=";
     fetchSubmodules = true;
   };
 
@@ -69,10 +69,11 @@ stdenv.mkDerivation (finalAttrs: {
         p25 = "sha256-9NhnB3bDQI1FLmr0zTYTjEYl8V8KteWbMefWObLDB/A=";
         p26 = "sha256-OxkiWTzNtmYxB64OtLUwghAkcT//SnMZVfUXynFg2Bg=";
         p27 = "sha256-KcsyPBJLUOwRAtp95IYFiZZNMi1xWmYW7XXG+bMucmY=";
+        p28 = "sha256-SGA69mE0VZSumZKOBcZqvzYtZRkFVSIMHFI5R9xcTWE=";
       };
       mainCargoDeps = rustPlatform.fetchCargoVendor {
         inherit (finalAttrs) src;
-        hash = "sha256-8seehYc2W0lvW9WPewPHC3cLR9Lgj2qCib/EXK0gwVA=";
+        hash = "sha256-7gU7vtYMOXX4qf3PkqriAxANhV3vraF71WMj/sS83ak=";
       };
       sorobanCargoDeps = lib.mapAttrs (
         protocol: hash:
@@ -105,11 +106,21 @@ stdenv.mkDerivation (finalAttrs: {
       '';
     };
 
-  # ethnum <= 1.5.2 fails on rustc 1.97+ (TryFromIntError is no longer ZST).
-  # Protocols p21-p26 pin ethnum 1.5.0 in Cargo.lock / dep-tree expects, so keep
-  # that version and apply the upstream 1.5.3 source fix in the vendored crate.
-  # https://github.com/nlordell/ethnum-rs/pull/58
   postPatch = ''
+    # Include integer types explicitly instead of relying on transitive standard
+    # library includes, some of which were removed in GCC 16.
+    substituteInPlace \
+      lib/libmedida/src/medida/stats/snapshot.h \
+      src/invariant/test/InvariantTestUtils.h \
+      src/util/xdrquery/XDRQueryEval.h \
+      --replace-fail '#include <memory>' $'#include <cstdint>\n#include <memory>'
+    substituteInPlace src/util/DebugMetaUtils.h \
+      --replace-fail '#include <filesystem>' $'#include <cstdint>\n#include <filesystem>'
+
+    # ethnum <= 1.5.2 fails on rustc 1.97+ (TryFromIntError is no longer ZST).
+    # Protocols p21-p26 pin ethnum 1.5.0 in Cargo.lock / dep-tree expects, so keep
+    # that version and apply the upstream 1.5.3 source fix in the vendored crate.
+    # https://github.com/nlordell/ethnum-rs/pull/58
     shopt -s nullglob
     for crate in "$cargoDepsCopy"/source-registry-*/ethnum-1.5.0; do
       patch -p1 -d "$crate" < ${
@@ -119,6 +130,18 @@ stdenv.mkDerivation (finalAttrs: {
           hash = "sha256-xG3RQg2vF+XW9IiYWaNyOF39WipSeoZGrygsOJ3XgIs=";
         }
       }
+    done
+
+    # Git dependencies do not include Cargo's published-crate VCS metadata.
+    # Recreate it so crate-git-revision can provide GIT_REVISION.
+    for crate in "$cargoDepsCopy"/source-git-*/stellar-xdr-*; do
+      version="$(basename "$crate")"
+      version="''${version#stellar-xdr-}"
+      xdrRevision="$(rg -U -o -r '$1' \
+        "name = \"stellar-xdr\"\nversion = \"$version\"\nsource = \"git\\+https://github.com/stellar/rs-stellar-xdr[^\"]*#([0-9a-f]{40})\"" \
+        Cargo.lock)"
+      test -n "$xdrRevision"
+      printf '{"git":{"sha1":"%s"}}\n' "$xdrRevision" > "$crate/.cargo_vcs_info.json"
     done
   '';
 
@@ -146,7 +169,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  # Build the large Rust crate separately to avoid its peak memory use
+  # overlapping with parallel C++ compilation. On aarch64, the release
+  # profile's fat LTO and single codegen unit also exceed typical builder limits.
+  preBuild =
+    lib.optionalString stdenv.hostPlatform.isAarch64 ''
+      export CARGO_PROFILE_RELEASE_LTO=off
+      export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+    ''
+    + ''
+      make -C src -j"$NIX_BUILD_CORES" ../target/release/librust_stellar_core.a
+    '';
+
   doCheck = true;
+  # The standalone consensus test binds to localhost.
+  __darwinAllowLocalNetworking = true;
 
   preConfigure = ''
     # Due to https://github.com/NixOS/nixpkgs/issues/8567 we cannot rely on
