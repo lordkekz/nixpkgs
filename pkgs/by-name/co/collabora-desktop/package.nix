@@ -140,6 +140,25 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Apply official branding
     cp -a ${finalAttrs.env.brandSrc}/branding* ${finalAttrs.env.brandSrc}/images ${finalAttrs.env.brandSrc}/welcome $out/share/coolwsd/browser/dist/
+
+    # cool.html loads the QWebChannel client from qrc:///qtwebchannel/qwebchannel.js,
+    # which QtWebEngine serves from a Qt resource compiled into libQt6WebChannel.
+    # That resource is absent from the nixpkgs Qt build, so the script never loads,
+    # qwebchannel's handshake never completes and the page stalls on a white screen.
+    # Inline a copy of the script instead.
+    python3 - $out/share/coolwsd/browser/dist/cool.html ${kdePackages.qtwebchannel}/share/qt6/webchannel/qwebchannel.js <<'PYEOF'
+    import sys
+
+    html_path, js_path = sys.argv[1], sys.argv[2]
+    tag = '<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>'
+    with open(html_path, encoding="utf-8") as f:
+        html = f.read()
+    assert tag in html, "qrc qwebchannel script tag not found in cool.html"
+    with open(js_path, encoding="utf-8") as f:
+        js = f.read()
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html.replace(tag, "<script type=\"text/javascript\">\n" + js + "\n</script>"))
+    PYEOF
   '';
 
   # QtWebEngine ships as its own nixpkgs package, so neither the process
