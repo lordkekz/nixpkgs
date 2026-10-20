@@ -142,12 +142,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a ${finalAttrs.env.brandSrc}/branding* ${finalAttrs.env.brandSrc}/images ${finalAttrs.env.brandSrc}/welcome $out/share/coolwsd/browser/dist/
   '';
 
-  # QtWebEngineProcess lives in the qtwebengine package, not in the qtbase
-  # one the qt app probes for it, so point the wrapper at it explicitly.
+  # QtWebEngine ships as its own nixpkgs package, so neither the process
+  # binary nor the resource paks are where the qt app probes for them
+  # (the qtbase prefix / the app dir); point the wrapper at the real
+  # locations.
   postFixup = ''
     mv $out/bin/coda-qt $out/bin/.coda-qt
     makeWrapper $out/bin/.coda-qt $out/bin/coda-qt \
-      --set QTWEBENGINEPROCESS_PATH ${kdePackages.qtwebengine}/libexec/QtWebEngineProcess
+      --set QTWEBENGINEPROCESS_PATH ${kdePackages.qtwebengine}/libexec/QtWebEngineProcess \
+      --set QTWEBENGINE_RESOURCES_PATH ${kdePackages.qtwebengine}/resources \
+      --set QTWEBENGINE_LOCALES_PATH ${kdePackages.qtwebengine}/qtwebengine_locales
   '';
 
   env = {
