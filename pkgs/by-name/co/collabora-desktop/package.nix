@@ -9,6 +9,7 @@
   libcap,
   libpng,
   libreoffice-collabora,
+  makeWrapper,
   nodejs,
   npmHooks,
   pam,
@@ -68,6 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     autoreconfHook
+    makeWrapper
     kdePackages.qttools
     perl
     nodejs
@@ -138,6 +140,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Apply official branding
     cp -a ${finalAttrs.env.brandSrc}/branding* ${finalAttrs.env.brandSrc}/images ${finalAttrs.env.brandSrc}/welcome $out/share/coolwsd/browser/dist/
+  '';
+
+  # QtWebEngineProcess lives in the qtwebengine package, not in the qtbase
+  # one the qt app probes for it, so point the wrapper at it explicitly.
+  postFixup = ''
+    mv $out/bin/coda-qt $out/bin/.coda-qt
+    makeWrapper $out/bin/.coda-qt $out/bin/coda-qt \
+      --set QTWEBENGINEPROCESS_PATH ${kdePackages.qtwebengine}/libexec/QtWebEngineProcess
   '';
 
   env = {
